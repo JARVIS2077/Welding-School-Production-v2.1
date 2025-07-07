@@ -1,231 +1,233 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Star, Quote, ChevronLeft, ChevronRight, Award } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ScrollAnimation } from "@/components/ui/scroll-animation"
 
-interface Testimonial {
-  id: string
-  name: string
-  role: string
-  company: string
-  image: string
-  rating: number
-  testimonial: string
-  course: string
-  achievement: string
-  graduationYear: string
-}
-
-const testimonials: Testimonial[] = [
+const testimonials = [
   {
-    id: "1",
-    name: "Sarah Mukamuri",
-    role: "Senior Welder",
-    company: "Zimbabwe Iron & Steel",
-    image: "/images/female-welder-equipment.jpeg",
-    rating: 5,
-    testimonial:
-      "Mroncy School transformed my career completely. The hands-on training and expert guidance helped me land my dream job in just 3 months after graduation.",
-    course: "SMAW Fundamentals",
-    achievement: "AWS Certified Welder",
-    graduationYear: "2023",
+    id: 1,
+    name: "Tendai Moyo",
+    role: "SMAW Graduate",
+    image: "/placeholder.svg?height=100&width=100&text=Tendai+M",
+    quote:
+      "The hands-on training at Daniel Muronzi Welding Centre gave me the confidence and skills to secure a job at a major construction company within weeks of graduation.",
   },
   {
-    id: "2",
-    name: "James Chikwanha",
-    role: "Welding Supervisor",
-    company: "Construction Plus Ltd",
-    image: "/images/male-welder.jpeg",
-    rating: 5,
-    testimonial:
-      "The structural welding course was exceptional. I went from basic welding to supervising a team of 15 welders. The certification opened doors I never imagined.",
-    course: "Structural Welding",
-    achievement: "Team Supervisor",
-    graduationYear: "2022",
+    id: 2,
+    name: "Chiedza Nyathi",
+    role: "TIG Welding Student",
+    image: "/placeholder.svg?height=100&width=100&text=Chiedza+N",
+    quote:
+      "The instructors are experienced professionals who take time to ensure every student masters the techniques. The practical approach to learning makes a huge difference.",
   },
   {
-    id: "3",
-    name: "Grace Mutindi",
-    role: "Freelance Welder",
-    company: "Self-Employed",
-    image: "/images/female-welder-sparks.jpeg",
-    rating: 5,
-    testimonial:
-      "Starting my own welding business seemed impossible until I joined Mroncy. The business training alongside technical skills gave me the confidence to go independent.",
-    course: "TIG Welding Mastery",
-    achievement: "Business Owner",
-    graduationYear: "2023",
+    id: 3,
+    name: "Farai Mutasa",
+    role: "Pipe Welding Graduate",
+    image: "/placeholder.svg?height=100&width=100&text=Farai+M",
+    quote:
+      "I came with no prior experience, but the step-by-step training methodology helped me become proficient in pipe welding. Now I work in the oil and gas industry.",
   },
   {
-    id: "4",
-    name: "Peter Moyo",
-    role: "Pipeline Welder",
-    company: "National Oil Company",
-    image: "/images/instructors.jpeg",
-    rating: 5,
-    testimonial:
-      "The precision and safety standards taught at Mroncy are unmatched. I now work on critical pipeline projects with complete confidence in my skills.",
-    course: "Pipeline Welding",
-    achievement: "Certified Pipeline Welder",
-    graduationYear: "2022",
+    id: 4,
+    name: "Tatenda Mhaka",
+    role: "Boiler Making Graduate",
+    image: "/placeholder.svg?height=100&width=100&text=Tatenda+M",
+    quote:
+      "The certification I received is recognized internationally, which has opened doors for me to work on projects across Southern Africa. Best investment in my future.",
   },
   {
-    id: "5",
-    name: "Mary Sibanda",
-    role: "Welding Instructor",
-    company: "Technical College",
-    image: "/images/female-welder-workshop.jpeg",
-    rating: 5,
-    testimonial:
-      "From student to instructor - Mroncy gave me the foundation to not just excel in welding but to teach others. The comprehensive curriculum is world-class.",
-    course: "Advanced Welding Program",
-    achievement: "Certified Instructor",
-    graduationYear: "2021",
+    id: 5,
+    name: "Rumbidzai Choto",
+    role: "MIG Welding Graduate",
+    image: "/placeholder.svg?height=100&width=100&text=Rumbidzai+C",
+    quote:
+      "As a woman in welding, I found the environment at MRONCY to be supportive and empowering. The skills I gained have allowed me to break barriers in a male-dominated field.",
   },
 ]
 
-export default function Testimonials() {
+const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
+  const [autoplay, setAutoplay] = useState(true)
+  const [isScrolling, setIsScrolling] = useState(false)
+  const [scrollDirection, setScrollDirection] = useState<"left" | "right" | null>(null)
+  const [isAnimating, setIsAnimating] = useState(false)
+  const scrollInterval = useRef<NodeJS.Timeout | null>(null)
+  const autoplayInterval = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    if (!isAutoPlaying) return
+    if (autoplay) {
+      autoplayInterval.current = setInterval(() => {
+        changeSlide((prevIndex) => (prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1))
+      }, 5000)
+    }
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
+    return () => {
+      if (autoplayInterval.current) {
+        clearInterval(autoplayInterval.current)
+      }
+    }
+  }, [autoplay])
 
-    return () => clearInterval(interval)
-  }, [isAutoPlaying])
+  // Handle auto-scrolling on hover
+  useEffect(() => {
+    if (isScrolling && scrollDirection) {
+      if (autoplayInterval.current) {
+        clearInterval(autoplayInterval.current)
+      }
 
-  const nextTestimonial = () => {
-    setCurrentIndex((prev) => (prev + 1) % testimonials.length)
-    setIsAutoPlaying(false)
+      scrollInterval.current = setInterval(() => {
+        if (scrollDirection === "right") {
+          nextSlide()
+        } else {
+          prevSlide()
+        }
+      }, 2000) // Scroll every 2 seconds
+    }
+
+    return () => {
+      if (scrollInterval.current) {
+        clearInterval(scrollInterval.current)
+      }
+    }
+  }, [isScrolling, scrollDirection])
+
+  const changeSlide = (indexFn: (prevIndex: number) => number) => {
+    if (isAnimating) return
+
+    setIsAnimating(true)
+    setCurrentIndex(indexFn)
+
+    // Reset animation state after transition completes
+    setTimeout(() => {
+      setIsAnimating(false)
+    }, 500)
   }
 
-  const prevTestimonial = () => {
-    setCurrentIndex((prev) => (prev - 1 + testimonials.length) % testimonials.length)
-    setIsAutoPlaying(false)
+  const nextSlide = () => {
+    setAutoplay(false)
+    changeSlide((prevIndex) => (prevIndex === testimonials.length - 1 ? 0 : prevIndex + 1))
   }
 
-  const currentTestimonial = testimonials[currentIndex]
+  const prevSlide = () => {
+    setAutoplay(false)
+    changeSlide((prevIndex) => (prevIndex === 0 ? testimonials.length - 1 : prevIndex - 1))
+  }
+
+  const handleMouseEnter = (area: "left" | "right") => {
+    setAutoplay(false)
+    setIsScrolling(true)
+    setScrollDirection(area)
+  }
+
+  const handleMouseLeave = () => {
+    setIsScrolling(false)
+    setScrollDirection(null)
+    setAutoplay(true)
+  }
 
   return (
-    <section className="py-16 bg-gradient-to-b from-gray-50 to-white">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4">
-            Success Stories
-          </Badge>
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Graduates Say</h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Real stories from real people who transformed their careers with our welding programs
-          </p>
-        </div>
+    <section className="py-16 bg-steel-blue text-white relative overflow-hidden">
+      {/* Background elements for visual interest */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-welding-orange/20 rounded-full blur-3xl animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/10 rounded-full blur-3xl animate-float"></div>
 
-        <div className="max-w-4xl mx-auto">
-          <Card className="relative overflow-hidden border-2 border-welding-orange/20 shadow-xl">
-            <CardContent className="p-8 md:p-12">
-              <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div className="relative">
-                  <div className="relative w-64 h-64 mx-auto rounded-full overflow-hidden border-4 border-welding-orange/20">
-                    <Image
-                      src={currentTestimonial.image || "/placeholder.svg"}
-                      alt={currentTestimonial.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                  <div className="absolute -top-4 -left-4 bg-welding-orange text-white p-3 rounded-full">
-                    <Quote className="h-6 w-6" />
-                  </div>
-                </div>
+      <div className="container-custom relative z-10">
+        <ScrollAnimation type="fade-up">
+          <h2 className="section-title text-center text-white mb-12">What Our Students Say</h2>
+        </ScrollAnimation>
 
-                <div className="space-y-6">
-                  <div className="flex items-center gap-1 mb-4">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-5 w-5 ${
-                          i < currentTestimonial.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <blockquote className="text-lg md:text-xl text-gray-700 italic leading-relaxed">
-                    "{currentTestimonial.testimonial}"
-                  </blockquote>
-
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="text-xl font-bold text-gray-900">{currentTestimonial.name}</h4>
-                      <p className="text-welding-orange font-medium">
-                        {currentTestimonial.role} at {currentTestimonial.company}
-                      </p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">{currentTestimonial.course}</Badge>
-                      <Badge variant="outline" className="border-green-200 text-green-700">
-                        <Award className="h-3 w-3 mr-1" />
-                        {currentTestimonial.achievement}
-                      </Badge>
-                      <Badge variant="outline">Class of {currentTestimonial.graduationYear}</Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex items-center justify-center gap-4 mt-8">
-            <Button variant="outline" size="icon" onClick={prevTestimonial} className="rounded-full bg-transparent">
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            <div className="flex gap-2">
-              {testimonials.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentIndex(index)
-                    setIsAutoPlaying(false)
-                  }}
-                  className={`w-3 h-3 rounded-full transition-all ${
-                    index === currentIndex ? "bg-welding-orange scale-125" : "bg-gray-300 hover:bg-gray-400"
-                  }`}
-                />
-              ))}
-            </div>
-
-            <Button variant="outline" size="icon" onClick={nextTestimonial} className="rounded-full bg-transparent">
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+        <div className="relative max-w-4xl mx-auto">
+          {/* Left scroll trigger area */}
+          <div
+            className="absolute left-0 top-1/2 bottom-0 w-16 z-20 flex items-center justify-start opacity-0 hover:opacity-100 transition-opacity duration-300 h-1/2 -translate-y-1/2"
+            onMouseEnter={() => handleMouseEnter("left")}
+            onMouseLeave={handleMouseLeave}
+          >
+            <button
+              onClick={prevSlide}
+              className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300 transform hover:scale-110 ml-2"
+              aria-label="Previous testimonial"
+              disabled={isAnimating}
+            >
+              <ChevronLeft size={24} className="text-white" />
+            </button>
           </div>
-        </div>
 
-        <div className="mt-12 text-center">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-welding-orange mb-2">500+</div>
-              <div className="text-sm text-muted-foreground">Graduates</div>
+          <ScrollAnimation type="fade-up" delay={0.2}>
+            <div className="overflow-hidden">
+              <div
+                className="flex transition-transform duration-500 ease-in-out will-change-transform hardware-accelerate"
+                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+              >
+                {testimonials.map((testimonial) => (
+                  <div key={testimonial.id} className="w-full flex-none px-2 sm:px-4">
+                    <div className="bg-white/10 backdrop-blur-sm p-4 sm:p-8 rounded-lg shadow-lg transition-all duration-500 hover:shadow-xl transform hover:scale-[1.02]">
+                      <div className="flex flex-col md:flex-row items-center md:items-start gap-4 sm:gap-6">
+                        <div className="relative w-16 h-16 sm:w-24 sm:h-24 rounded-full overflow-hidden flex-shrink-0 border-2 border-welding-orange shadow-lg transition-transform duration-500 hover:scale-110 group">
+                          <Image
+                            src={`/placeholder.svg?height=100&width=100&text=${encodeURIComponent(testimonial.name.split(' ').map(n => n[0]).join('+'))}`}
+                            alt={testimonial.name}
+                            fill
+                            sizes="100px"
+                            className="object-cover transition-all duration-500 group-hover:scale-110"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-base sm:text-lg italic mb-3 sm:mb-4">"{testimonial.quote}"</p>
+                          <div className="transform transition-all duration-500 hover:translate-x-2">
+                            <h4 className="font-bold text-lg sm:text-xl">{testimonial.name}</h4>
+                            <p className="text-welding-orange text-sm sm:text-base">{testimonial.role}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-welding-orange mb-2">95%</div>
-              <div className="text-sm text-muted-foreground">Job Placement Rate</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-welding-orange mb-2">4.9/5</div>
-              <div className="text-sm text-muted-foreground">Average Rating</div>
-            </div>
+          </ScrollAnimation>
+
+          {/* Right scroll trigger area */}
+          <div
+            className="absolute right-0 top-1/2 bottom-0 w-16 z-20 flex items-center justify-end opacity-0 hover:opacity-100 transition-opacity duration-300 h-1/2 -translate-y-1/2"
+            onMouseEnter={() => handleMouseEnter("right")}
+            onMouseLeave={handleMouseLeave}
+          >
+            <button
+              onClick={nextSlide}
+              className="bg-white/20 backdrop-blur-sm p-2 rounded-full hover:bg-white/30 transition-all duration-300 transform hover:scale-110 mr-2"
+              aria-label="Next testimonial"
+              disabled={isAnimating}
+            >
+              <ChevronRight size={24} className="text-white" />
+            </button>
+          </div>
+
+          <div className="flex justify-center mt-6 space-x-2">
+            {testimonials.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  if (!isAnimating) {
+                    setCurrentIndex(index)
+                    setAutoplay(false)
+                  }
+                }}
+                className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                  index === currentIndex ? "bg-welding-orange scale-125" : "bg-white/30 hover:bg-white/50"
+                }`}
+                aria-label={`Go to testimonial ${index + 1}`}
+                disabled={isAnimating}
+              />
+            ))}
           </div>
         </div>
       </div>
     </section>
   )
 }
+
+export default Testimonials
