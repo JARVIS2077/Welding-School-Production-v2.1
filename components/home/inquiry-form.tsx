@@ -10,21 +10,15 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle, MessageSquare } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
 interface FormData {
-  firstName: string
-  lastName: string
+  name: string
   email: string
   phone: string
   course: string
-  experience: string
-  schedule: string
   message: string
-  newsletter: boolean
-  whatsapp: boolean
 }
 
 const courses = [
@@ -38,34 +32,19 @@ const courses = [
   "Custom Training Program",
 ]
 
-const experienceLevels = ["Complete Beginner", "Some Experience", "Intermediate", "Advanced", "Professional"]
-
-const schedulePreferences = [
-  "Full-time (Weekdays)",
-  "Part-time (Evenings)",
-  "Weekend Classes",
-  "Flexible Schedule",
-  "Accelerated Program",
-]
-
 export default function InquiryForm() {
   const [formData, setFormData] = useState<FormData>({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     phone: "",
     course: "",
-    experience: "",
-    schedule: "",
     message: "",
-    newsletter: false,
-    whatsapp: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
   const { toast } = useToast()
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -87,16 +66,11 @@ export default function InquiryForm() {
       setTimeout(() => {
         setIsSubmitted(false)
         setFormData({
-          firstName: "",
-          lastName: "",
+          name: "",
           email: "",
           phone: "",
           course: "",
-          experience: "",
-          schedule: "",
           message: "",
-          newsletter: false,
-          whatsapp: false,
         })
       }, 3000)
     } catch (error) {
@@ -160,7 +134,7 @@ export default function InquiryForm() {
           </Badge>
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Ready to Begin Your Welding Career?</h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Fill out our inquiry form and we'll help you choose the perfect welding program for your goals
+            Fill out our simple inquiry form and we'll help you choose the perfect welding program
           </p>
         </div>
 
@@ -175,27 +149,15 @@ export default function InquiryForm() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="firstName">First Name *</Label>
-                      <Input
-                        id="firstName"
-                        value={formData.firstName}
-                        onChange={(e) => handleInputChange("firstName", e.target.value)}
-                        required
-                        placeholder="Enter your first name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="lastName">Last Name *</Label>
-                      <Input
-                        id="lastName"
-                        value={formData.lastName}
-                        onChange={(e) => handleInputChange("lastName", e.target.value)}
-                        required
-                        placeholder="Enter your last name"
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      required
+                      placeholder="Enter your full name"
+                    />
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-4">
@@ -239,74 +201,15 @@ export default function InquiryForm() {
                     </Select>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="experience">Experience Level</Label>
-                      <Select
-                        value={formData.experience}
-                        onValueChange={(value) => handleInputChange("experience", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your experience level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {experienceLevels.map((level) => (
-                            <SelectItem key={level} value={level}>
-                              {level}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="schedule">Preferred Schedule</Label>
-                      <Select value={formData.schedule} onValueChange={(value) => handleInputChange("schedule", value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your preferred schedule" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {schedulePreferences.map((schedule) => (
-                            <SelectItem key={schedule} value={schedule}>
-                              {schedule}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
-                    <Label htmlFor="message">Additional Questions or Comments</Label>
+                    <Label htmlFor="message">Questions or Comments</Label>
                     <Textarea
                       id="message"
                       value={formData.message}
                       onChange={(e) => handleInputChange("message", e.target.value)}
-                      placeholder="Tell us about your goals, questions, or any specific requirements..."
+                      placeholder="Tell us about your goals or any specific questions..."
                       className="min-h-[100px]"
                     />
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="newsletter"
-                        checked={formData.newsletter}
-                        onCheckedChange={(checked) => handleInputChange("newsletter", checked as boolean)}
-                      />
-                      <Label htmlFor="newsletter" className="text-sm">
-                        Subscribe to our newsletter for welding tips and course updates
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="whatsapp"
-                        checked={formData.whatsapp}
-                        onCheckedChange={(checked) => handleInputChange("whatsapp", checked as boolean)}
-                      />
-                      <Label htmlFor="whatsapp" className="text-sm">
-                        I prefer to be contacted via WhatsApp
-                      </Label>
-                    </div>
                   </div>
 
                   <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
